@@ -2,16 +2,21 @@ from pydantic import BaseModel, EmailStr
 
 
 class UserCreate(BaseModel):
-    username: str
+    name: str
     email: EmailStr
     password: str
 
 
 class UserOut(BaseModel):
     id: int
-    username: str
+    name: str
     email: EmailStr
 
 
 class UpdateUser(BaseModel):
-    username: str
+    name: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str

@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
-from routers import auth
+from views import auth
 
 app = FastAPI()
 
