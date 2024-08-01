@@ -7,13 +7,18 @@ class UserCreate(BaseModel):
     password: str
 
 
-class UserOut(BaseModel):
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class User(BaseModel):
     id: int
     name: str
     email: EmailStr
 
 
-class UpdateUser(BaseModel):
+class UserUpdate(BaseModel):
     name: str
 
 
