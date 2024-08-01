@@ -9,7 +9,7 @@ from passlib.exc import InvalidTokenError
 from sqlalchemy.orm import Session
 
 from database import get_db
-from schemas import TokenData
+from schemas import TokenData, User
 from utils.repo import get_user_by_email
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -50,3 +50,6 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
     return user
 
 
+def admin_required(current_user: User = Depends(get_current_user)):
+    if current_user.role != "ADMIN":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")

@@ -1,10 +1,13 @@
 from pydantic import BaseModel, EmailStr
 
+from models import RoleTypes
+
 
 class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str
+    role: RoleTypes = RoleTypes.REGULAR_USER
 
 
 class LoginRequest(BaseModel):

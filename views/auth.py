@@ -22,7 +22,7 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
     new_user = User(name=user.name, email=user.email, password=hashed_password)
     repo.save_user(db, new_user)
 
-    access_token = create_access_token(data={"sub": user.email})
+    access_token = create_access_token(data={"sub": user.email, "role": user.role})
     return {"access_token": access_token, "token_type": "bearer"}
 
 
@@ -33,8 +33,7 @@ def login(login_req: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = create_access_token(data={"sub": user.email})
+    access_token = create_access_token(data={"sub": user.email, "role": user.role})
     return {"access_token": access_token, "token_type": "bearer"}
-
-

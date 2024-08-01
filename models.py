@@ -1,7 +1,14 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Enum as SQLAEnum
 from sqlalchemy.orm import declarative_base
 
+from enum import Enum
+
 Base = declarative_base()
+
+
+class RoleTypes(str, Enum):
+    ADMIN = 'ADMIN',
+    REGULAR_USER = 'REGULAR_USER'
 
 
 class User(Base):
@@ -10,3 +17,4 @@ class User(Base):
     name = Column(String)
     email = Column(String, unique=True)
     password = Column(String)
+    role = Column(SQLAEnum(RoleTypes), default=RoleTypes.REGULAR_USER)
