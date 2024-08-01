@@ -17,8 +17,11 @@ def read_users_me(current_user: User = Depends(get_current_user)):
 
 
 @router.put('/me', response_model=User)
-def update_user(user_update: UserUpdate, db: Session = Depends(get_db)):
-    pass
+def update_user(user_update: UserUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    current_user.name = user_update.name
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
 
 @router.get("", response_model=List[User], dependencies=[Depends(admin_required)])
