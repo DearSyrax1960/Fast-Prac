@@ -27,7 +27,7 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-def login(login_req: LoginRequest = Depends(), db: Session = Depends(get_db)):
+def login(login_req: LoginRequest, db: Session = Depends(get_db)):
     user = authenticate_user(db, login_req.username, login_req.password)
     if not user:
         raise HTTPException(
