@@ -1,9 +1,7 @@
 from sqlalchemy import Column, Integer, String, Enum as SQLAEnum
-from sqlalchemy.orm import declarative_base
+from database import Base
 
 from enum import Enum
-
-Base = declarative_base()
 
 
 class RoleTypes(str, Enum):

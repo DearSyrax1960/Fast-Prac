@@ -1,21 +1,21 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from starlette import status
 
-from database import get_db
+from dependencies import get_db
 from utils import repo
-from models import User
-from schemas import Token, UserCreate, LoginRequest
-from utils.jwt import create_access_token
 from utils.password import get_password_hash, authenticate_user
+from utils.jwt import create_access_token
+from models.users_model import User
+from schemas.user_schema import UserCreate, LoginRequest
+from schemas.token_schema import Token
 
-router = APIRouter(prefix='/auth')
+router = APIRouter()
 
 
 @router.post('/signup', response_model=Token)
 def signup(user: UserCreate, db: Session = Depends(get_db)):
     if repo.get_user_by_email(db, user.email):
-        raise HTTPException(status_code=400, detail="Email already registered.")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered.")
 
     hashed_password = get_password_hash(user.password)
 

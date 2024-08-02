@@ -1,15 +1,15 @@
 import os
 
 from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from datetime import datetime, timedelta
-from fastapi.security import OAuth2PasswordBearer
 from dotenv import load_dotenv
 from passlib.exc import InvalidTokenError
 from sqlalchemy.orm import Session
 
-from database import get_db
-from schemas import TokenData, User
+from dependencies import get_db
+from schemas.token_schema import TokenData
 from utils.repo import get_user_by_email
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
