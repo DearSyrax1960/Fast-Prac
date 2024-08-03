@@ -16,7 +16,7 @@ def read_users_me(current_user: UserOut = Depends(get_current_user)):
     return current_user
 
 
-@router.put('/me', response_model=UserOut)
+@router.patch('/me', response_model=UserOut)
 def update_user(user_update: UserUpdate, db: Session = Depends(get_db),
                 current_user: UserOut = Depends(get_current_user)):
     current_user.name = user_update.name
