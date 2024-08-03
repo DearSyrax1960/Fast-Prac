@@ -1,9 +1,9 @@
 import os
+import time
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt
-from datetime import datetime, timedelta
+from jose import jwt, ExpiredSignatureError, JWTError
 from dotenv import load_dotenv
 from passlib.exc import InvalidTokenError
 from sqlalchemy.orm import Session
@@ -20,30 +20,28 @@ ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: float | None = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = time.time() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = time.time() + ACCESS_TOKEN_EXPIRE_MINUTES * 60
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
+credentials_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
+
 def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
-            raise credentials_exception
-        token_data = TokenData(username=email)
-    except InvalidTokenError:
+    email: str = decode_token(token).get("sub")
+    if email is None:
         raise credentials_exception
+    token_data = TokenData(username=email)
     user = get_user_by_email(db, email=token_data.username)
     if user is None:
         raise credentials_exception
@@ -51,17 +49,20 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
 
 
 def admin_required(token: str = Depends(oauth2_scheme)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        role: str = payload.get("role")
-        if role is None:
-            raise credentials_exception
-    except InvalidTokenError:
+    role: str = decode_token(token=token).get("role")
+    if role is None:
         raise credentials_exception
+
     if role != "ADMIN":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="not enough permissions")
+
+
+def decode_token(token: str) -> dict:
+    try:
+        payload: dict = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="token has been expired you have to login. ")
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=" invalid token")
+    return payload
