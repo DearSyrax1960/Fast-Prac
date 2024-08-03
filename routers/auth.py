@@ -12,7 +12,7 @@ from schemas.token_schema import Token
 router = APIRouter()
 
 
-@router.post('/signup', response_model=Token)
+@router.post('/signup', response_model=Token, status_code=status.HTTP_201_CREATED)
 def signup(user: UserCreate, db: Session = Depends(get_db)):
     if repo.get_user_by_email(db, user.email):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered.")
