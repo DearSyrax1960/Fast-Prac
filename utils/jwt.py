@@ -5,7 +5,6 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, ExpiredSignatureError, JWTError
 from dotenv import load_dotenv
-from passlib.exc import InvalidTokenError
 from sqlalchemy.orm import Session
 
 from dependencies import get_db
@@ -20,12 +19,9 @@ ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 
-def create_access_token(data: dict, expires_delta: float | None = None):
+def create_access_token(data: dict):
     to_encode = data.copy()
-    if expires_delta:
-        expire = time.time() + expires_delta
-    else:
-        expire = time.time() + ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    expire = time.time() + ACCESS_TOKEN_EXPIRE_MINUTES * 60
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -52,7 +48,6 @@ def admin_required(token: str = Depends(oauth2_scheme)):
     role: str = decode_token(token=token).get("role")
     if role is None:
         raise credentials_exception
-
     if role != "ADMIN":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="not enough permissions")
 
