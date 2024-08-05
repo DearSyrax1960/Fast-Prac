@@ -28,7 +28,7 @@ class UserCreate(UserBase):
 class UserOut(UserBase):
     id: int
 
-    class Config:
+    class ConfigDict:
         orm_mode = True
 
 

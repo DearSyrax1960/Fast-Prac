@@ -56,7 +56,7 @@ def decode_token(token: str) -> dict:
     try:
         payload: dict = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except ExpiredSignatureError:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="token has been expired you have to login. ")
     except JWTError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=" invalid token")
